@@ -1,70 +1,9 @@
-/*
- * recursive?
- * or non recursive?
- * which one to follow????
- */
-
-// I think I sould ememnt a data structure for the ??>>
-#[derive(Debug)]
-struct Dir {
-    dir_name: String,
-    size: usize,
-}
-
-fn new_dir(name: &str) -> Dir {
-    Dir {
-        // parent_dir: *Dir;
-        dir_name: name.to_string(),
-        size: 0,
-    }
-}
-
 pub fn p1(input: &str) -> usize {
-    let mut stack: Vec<Dir> = vec![];
-    let mut read: Vec<Dir> = vec![];
-
-    for line in input.trim().lines() {
-        // println!("{}\n{:#?}", line, root);
-        if line.contains("$ ls") {
-            continue;
-        }
-
-        if line.contains("cd") {
-            if line.contains("..") {
-                let tmp = stack.pop().unwrap();
-                stack.last_mut().unwrap().size += tmp.size;
-                read.push(tmp);
-                continue;
-            }
-
-            let curr_dir_name = line.split(" ").last().unwrap();
-            stack.push(new_dir(curr_dir_name));
-        }
-
-        match line.split(" ").nth(0).unwrap().parse::<usize>() {
-            Ok(num) => stack.last_mut().unwrap().size += num,
-            Err(_) => continue,
-        }
-    }
-    println!("stack: {:#?}", stack);
-
-    for i in (0..stack.len()).rev() {
-        if i == 0 {
-            read.push(stack.pop().unwrap());
-            break;
-        }
-        let tmp = stack.pop().unwrap();
-        stack.last_mut().unwrap().size += tmp.size;
-        read.push(tmp);
-    }
-
-    // println!("read: {:#?}", read);
-
-    let res = read
+    let res = directory_sizes(input)
         .iter()
         .map(|val| {
-            if val.size >= 100000 {
-                return 1;
+            if val.le(&100000) {
+                return *val;
             }
             return 0;
         })
@@ -73,6 +12,71 @@ pub fn p1(input: &str) -> usize {
     return res;
 }
 
+pub fn p2(input: &str) -> usize {
+    let filesystem_size: usize = 70000000;
+    let update_size: usize = 30000000;
+
+    let filesystem = directory_sizes(input);
+
+    let root_size = filesystem.last().unwrap();
+    let storage_needed = update_size - (filesystem_size - root_size);
+
+    // best candiate for dilation
+    let mut best_candidate: usize = 0;
+    let mut smallest_diviation: usize = 0;
+    let mut run_1 = true;
+
+    for dir_size in filesystem[..filesystem.len() - 1].iter() {
+        if dir_size.gt(&storage_needed) {
+            let diviation = dir_size - storage_needed;
+            if run_1 || diviation.lt(&smallest_diviation) {
+                smallest_diviation = diviation;
+                best_candidate = *dir_size;
+                run_1 = false;
+            }
+        }
+    }
+
+    best_candidate
+}
+
+// the last item is the 1st item btw
+fn directory_sizes(input: &str) -> Vec<usize> {
+    let mut stack: Vec<usize> = vec![];
+    let mut read: Vec<usize> = vec![];
+
+    for line in input.trim().lines() {
+        if line == "$ ls" {
+            continue;
+        } else if line == "$ cd .." {
+            let tmp = stack.pop().unwrap();
+            *stack.last_mut().unwrap() += tmp;
+            read.push(tmp);
+        } else if line.contains("$ cd") {
+            stack.push(0);
+        } else {
+            match line.split(" ").nth(0).unwrap().parse::<usize>() {
+                Ok(num) => *stack.last_mut().unwrap() += num,
+                Err(_) => continue,
+            }
+        }
+    }
+
+    // remaing directories
+    for i in (0..stack.len()).rev() {
+        if i == 0 {
+            read.push(stack.pop().unwrap());
+            break;
+        }
+        let tmp = stack.pop().unwrap();
+        *stack.last_mut().unwrap() += tmp;
+        read.push(tmp);
+    }
+
+    return read;
+}
+
+// this time test passed but the actual input didn't
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -100,10 +104,18 @@ $ ls
 5626152 d.ext
 7214296 k
 ";
+    // ---Part One---
+    // 1307902
+    // ---Part Two---
+    // 7068748
 
+    // #[test]
+    // fn test_parse_cmd() {
+    //     assert_eq!(p1(INPUT), 1);
+    // }
+    //
     #[test]
-    fn test_parse_cmd() {
-        assert_eq!(p1(INPUT), 1);
-
+    fn test_p2() {
+        assert_eq!(p2(INPUT), 24933642);
     }
 }
