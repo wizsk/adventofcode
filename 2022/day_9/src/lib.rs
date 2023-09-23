@@ -1,45 +1,63 @@
-pub fn calculate_m_h_w(input: &str) -> (usize, usize) {
-    // can be - (negative) while calculating
-    let mut hight: i32 = 0;
-    let mut width: i32 = 0;
+use std::collections::HashSet;
+
+// macro_rules! ternary {
+//     ($c:expr, $v:expr, $v1:expr) => {
+//         if $c {
+//             $v
+//         } else {
+//             $v1
+//         }
+//     };
+// }
+
+pub fn part_1(input: &str) -> usize {
+    let mut set: HashSet<(i32, i32)> = HashSet::new();
+    set.insert((0, 0));
+
+    let mut head = (0, 0);
+    let mut tail = (0, 0);
 
     for line in input.trim().lines() {
-        let cmd = line.split(" ").collect::<Vec<_>>();
-        if cmd.len() != 2 {
-            panic!("while parsing file cmd.len != 2");
-        }
+        let arg = line.split(" ").collect::<Vec<_>>();
+        let cmd = arg[0];
+        let mv = arg[1]
+            .parse::<i32>()
+            .expect("part_1: while parsing argumnet");
+        for _ in 0..mv {
+            match cmd {
+                "R" => {
+                    head.0 += 1;
+                }
+                "L" => {
+                    head.0 -= 1;
+                }
+                "U" => {
+                    head.1 += 1;
+                }
+                "D" => {
+                    head.1 -= 1;
+                }
+                _ => panic!("unexpected instruction {cmd}"),
+            }
 
-        let ins = cmd[0];
-        let step = cmd[1].parse::<i32>().unwrap();
+            let dx: i32 = head.0 - tail.0;
+            let dy: i32 = head.1 - tail.1;
 
-        match ins {
-            "U" => hight += step,
-            "D" => hight -= step,
-            "R" => width += step,
-            "L" => width -= step,
-            _ => {}
+            if dx.abs() > 1 || dy.abs() > 1 {
+                // let _x = ternary![dx > 0, 1, -1];
+                // let _y = ternary![dy > 0, 1, -1];
+                if dx == 0 {
+                    tail.1 += dy / 2;
+                } else if dy == 0 {
+                    tail.0 += dx / 2;
+                } else {
+                    tail.0 += if dx > 0 { 1 } else { -1 };
+                    tail.1 += if dy > 0 { 1 } else { -1 };
+                }
+            }
+            set.insert(tail);
         }
     }
 
-    (hight as usize, width as usize)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    const INPUT: &str = "R 4
-U 4
-L 3
-D 1
-R 4
-D 1
-L 5
-R 2
-";
-
-    #[test]
-    fn calc() {
-        let result = calculate_m_h_w(INPUT);
-        assert_eq!(result, (2, 2));
-    }
+    set.len()
 }
