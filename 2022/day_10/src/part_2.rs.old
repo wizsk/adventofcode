@@ -1,0 +1,206 @@
+pub fn p2(input: &str) -> usize {
+    let mut cycles: usize = 0;
+    let mut x: i32 = 0;
+    //
+    let mut screen: [[i8; 40]; 6] = [[0; 40]; 6];
+
+    for line in input.trim().lines() {
+        let ins = line.split_whitespace().collect::<Vec<_>>();
+        match ins[0] {
+            "noop" => {
+                cycles += 1;
+            }
+
+            "addx" => {
+                for _ in 0..2 {
+                    cycles += 1;
+
+                    // vertical line
+                    let y = (cycles - 1) / 40;
+                    // println!("{cycles}::{y} {x}");
+
+                    // ### 3 pix wide
+                    for _ in 0..3 {
+                        if screen[y][x.abs() as usize] == 0 {
+                            screen[y][x.abs() as usize] = 1;
+                            break;
+                        }
+                    }
+                }
+
+                // cycles += 1;
+                x += ins[1].parse::<i32>().unwrap();
+            }
+            _ => panic!("unrecognized ins"),
+        }
+    }
+
+    for r in screen {
+        for i in r {
+            if i == 0 {
+                print!(" ");
+            } else {
+                print!("█");
+            }
+        }
+        println!();
+    }
+    return 0;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn part_1_test() {
+        let input = "addx 15
+addx -11
+addx 6
+addx -3
+addx 5
+addx -1
+addx -8
+addx 13
+addx 4
+noop
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx 5
+addx -1
+addx -35
+addx 1
+addx 24
+addx -19
+addx 1
+addx 16
+addx -11
+noop
+noop
+addx 21
+addx -15
+noop
+noop
+addx -3
+addx 9
+addx 1
+addx -3
+addx 8
+addx 1
+addx 5
+noop
+noop
+noop
+noop
+noop
+addx -36
+noop
+addx 1
+addx 7
+noop
+noop
+noop
+addx 2
+addx 6
+noop
+noop
+noop
+noop
+noop
+addx 1
+noop
+noop
+addx 7
+addx 1
+noop
+addx -13
+addx 13
+addx 7
+noop
+addx 1
+addx -33
+noop
+noop
+noop
+addx 2
+noop
+noop
+noop
+addx 8
+noop
+addx -1
+addx 2
+addx 1
+noop
+addx 17
+addx -9
+addx 1
+addx 1
+addx -3
+addx 11
+noop
+noop
+addx 1
+noop
+addx 1
+noop
+noop
+addx -13
+addx -19
+addx 1
+addx 3
+addx 26
+addx -30
+addx 12
+addx -1
+addx 3
+addx 1
+noop
+noop
+noop
+addx -9
+addx 18
+addx 1
+addx 2
+noop
+noop
+addx 9
+noop
+noop
+noop
+addx -1
+addx 2
+addx -37
+addx 1
+addx 3
+noop
+addx 15
+addx -21
+addx 22
+addx -6
+addx 1
+noop
+addx 2
+addx 1
+noop
+addx -10
+noop
+noop
+addx 20
+addx 1
+addx 2
+addx 2
+addx -6
+addx -11
+noop
+noop
+noop";
+        let res = p2(input);
+        assert_eq!(res, 13140);
+    }
+}
