@@ -1,6 +1,6 @@
 use crate::*;
 
-fn p1(input: &str) -> Vec<Monkey> {
+pub fn game(input: &str) -> Vec<Monkey> {
     let mut game: Vec<Monkey> = Vec::new();
 
     for (i, round) in input.trim().split("\n\n").enumerate() {

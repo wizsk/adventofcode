@@ -12,7 +12,7 @@ enum Operator {
 
 #[allow(unused)]
 #[derive(Debug)]
-struct Monkey {
+pub struct Monkey {
     idx: usize,
     op: Operation,
     items: Vec<usize>,
